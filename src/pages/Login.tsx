@@ -89,7 +89,7 @@ export default function Login({ navigation }: StackScreenProps<any>) {
         <LinearGradient
             start={{ x: 0.0, y: 0.0 }}
             end={{ x: 1.0, y: 1.0 }}
-            colors={['#031A62', '#00A3FF']}
+            colors={['#006400', '#ADFF2F']}
             style={styles.gradientContainer}
         >
             {isFocused && <StatusBar animated translucent style="light" />}
@@ -113,7 +113,7 @@ export default function Login({ navigation }: StackScreenProps<any>) {
                 />
                 <Spacer size={80} />
                 <View style={styles.inputLabelRow}>
-                    <Text style={styles.label}>Email</Text>
+                    <Text style={styles.label}>Contact</Text>
                     {emailIsInvalid && <Text style={styles.error}>invalid email</Text>}
                 </View>
                 <TextInput
@@ -171,6 +171,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'baseline',
         marginBottom: 4,
+        color: '#FF0000', 
     },
 
     input: {
