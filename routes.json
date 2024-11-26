@@ -1,0 +1,7 @@
+{
+  "/login": "/600/users",
+  "/register": "/600/users",
+  "users": "/600/users",
+  "/events/:id/volunteers": "/events/:id",
+  "/events": "/events"
+}

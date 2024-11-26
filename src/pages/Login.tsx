@@ -1,3 +1,4 @@
+//Login.tsx
 import { useIsFocused } from "@react-navigation/native";
 import { StackScreenProps } from "@react-navigation/stack";
 import { ImageBackground } from "react-native";
@@ -14,6 +15,7 @@ import * as api from "../services/api";
 import { getFromCache, setInCache } from "../services/caching";
 import { User } from "../types/User";
 import { isTokenExpired, sanitizeEmail, validateEmail } from "../utils";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Login({ navigation }: StackScreenProps<any>) {
   const authenticationContext = useContext(AuthenticationContext);
@@ -22,6 +24,8 @@ export default function Login({ navigation }: StackScreenProps<any>) {
   const [emailIsInvalid, setEmailIsInvalid] = useState<boolean>();
   const [passwordIsInvalid, setPasswordIsInvalid] = useState<boolean>();
   const [authError, setAuthError] = useState<string>();
+  const [error, setError] = useState<string | null>(null);
+  const authContext = useContext(AuthenticationContext);
 
   const [accessTokenIsValid, setAccessTokenIsValid] = useState<boolean>(false);
   const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
@@ -51,27 +55,38 @@ export default function Login({ navigation }: StackScreenProps<any>) {
       navigation.navigate("EventsMap");
   }, [accessTokenIsValid]);
 
-  const handleAuthentication = () => {
-    if (formIsValid()) {
+  const handleAuthentication = async () => {
+    if (!formIsValid()) return;
+
+    try {
       setIsAuthenticating(true);
-      api
-        .authenticateUser(sanitizeEmail(email), password)
-        .then((response) => {
-          setInCache("userInfo", response.data.user);
-          setInCache("accessToken", response.data.accessToken);
-          authenticationContext?.setValue(response.data.user);
-          setIsAuthenticating(false);
-          123;
-          navigation.navigate("EventsMap");
-        })
-        .catch((error) => {
-          if (error.response) {
-            setAuthError(error.response.data);
-          } else {
-            setAuthError("Something went wrong.");
-          }
-          setIsAuthenticating(false);
-        });
+      setError(null);
+
+      const response = await api.authenticateUser(
+        sanitizeEmail(email),
+        password
+      );
+      console.log("Authentication response:", response.data);
+
+      if (response.data.user) {
+        // Store user info synchronously
+        await AsyncStorage.setItem(
+          "userInfo",
+          JSON.stringify(response.data.user)
+        );
+
+        // Update context
+        console.log("Setting auth context with user:", response.data.user);
+        authenticationContext?.setValue(response.data.user);
+
+        // Navigate after context is set
+        navigation.navigate("EventsMap");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Invalid email or password");
+    } finally {
+      setIsAuthenticating(false);
     }
   };
 
